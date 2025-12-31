@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Door Entry</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .icon-container svg {
+            width: 40px;
+            height: 40px;
+            fill: #fff;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .pin-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .pin-dot.filled {
+            background: #4facfe;
+            border-color: #4facfe;
+            box-shadow: 0 0 12px rgba(79, 172, 254, 0.6);
+        }
+
+        .pin-dot.error {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .key {
+            aspect-ratio: 1.3;
+            border: none;
+            border-radius: 16px;
+            font-size: 28px;
+            font-weight: 500;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .key:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .key:active {
+            background: rgba(79, 172, 254, 0.3);
+            transform: scale(0.95);
+        }
+
+        .key.delete {
+            font-size: 20px;
+        }
+
+        .key.delete svg {
+            width: 28px;
+            height: 28px;
+            fill: #fff;
+        }
+
+        .key.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .key.empty:hover, .key.empty:active {
+            background: transparent;
+            transform: none;
+        }
+
+        /* Success State */
+        .success-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .success-container.show {
+            display: flex;
+        }
+
+        .pin-container.hide {
+            display: none;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #00c853 0%, #69f0ae 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 30px rgba(0, 200, 83, 0.4);
+        }
+
+        .success-icon svg {
+            width: 50px;
+            height: 50px;
+            fill: #fff;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #69f0ae;
+        }
+
+        .success-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+        }
+
+        .reset-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Error message */
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            height: 20px;
+        }
+
+        .error-msg.show {
+            opacity: 1;
+        }
+
+        /* Loading state */
+        .loading .icon-container {
+            animation: pulse 1s ease infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- PIN Entry View -->
+            <div class="pin-container" id="pinContainer">
+                <div class="icon-container">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                <h1>Enter PIN</h1>
+                <p class="subtitle">Enter your 4-digit access code</p>
+                
+                <div class="pin-display">
+                    <div class="pin-dot" id="dot1"></div>
+                    <div class="pin-dot" id="dot2"></div>
+                    <div class="pin-dot" id="dot3"></div>
+                    <div class="pin-dot" id="dot4"></div>
+                </div>
+
+                <div class="keypad">
+                    <button class="key" data-key="1">1</button>
+                    <button class="key" data-key="2">2</button>
+                    <button class="key" data-key="3">3</button>
+                    <button class="key" data-key="4">4</button>
+                    <button class="key" data-key="5">5</button>
+                    <button class="key" data-key="6">6</button>
+                    <button class="key" data-key="7">7</button>
+                    <button class="key" data-key="8">8</button>
+                    <button class="key" data-key="9">9</button>
+                    <button class="key empty"></button>
+                    <button class="key" data-key="0">0</button>
+                    <button class="key delete" id="deleteBtn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="error-msg" id="errorMsg">Incorrect PIN. Try again.</p>
+            </div>
+
+            <!-- Success View -->
+            <div class="success-container" id="successContainer">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    </svg>
+                </div>
+                <h2 class="success-title">Door Unlocked!</h2>
+                <p class="success-subtitle">Welcome home 🏠</p>
+                <button class="reset-btn" id="resetBtn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PIN = '2552';
+        const WEBHOOK_URL = 'https://maker.ifttt.com/trigger/buzz_entry/with/key/fSi-DfEb3a-ht2tCstC0tp_EsFOlnZNpeA6f8UqBJ--';
+        
+        let enteredPin = '';
+        
+        const dots = [
+            document.getElementById('dot1'),
+            document.getElementById('dot2'),
+            document.getElementById('dot3'),
+            document.getElementById('dot4')
+        ];
+        const errorMsg = document.getElementById('errorMsg');
+        const pinContainer = document.getElementById('pinContainer');
+        const successContainer = document.getElementById('successContainer');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                dot.classList.remove('filled', 'error');
+                if (index < enteredPin.length) {
+                    dot.classList.add('filled');
+                }
+            });
+        }
+
+        function showError() {
+            dots.forEach(dot => {
+                dot.classList.add('error');
+            });
+            errorMsg.classList.add('show');
+            
+            setTimeout(() => {
+                enteredPin = '';
+                updateDots();
+                errorMsg.classList.remove('show');
+            }, 1000);
+        }
+
+        function triggerWebhook() {
+            return new Promise((resolve) => {
+                // Use image request to bypass CORS - IFTTT webhooks accept GET
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(true); // Still resolve - request was sent
+                img.src = WEBHOOK_URL + '?t=' + Date.now(); // Cache bust
+                
+                // Resolve after short timeout regardless (request fires immediately)
+                setTimeout(() => resolve(true), 500);
+            });
+        }
+
+        async function checkPin() {
+            if (enteredPin === CORRECT_PIN) {
+                // Trigger the webhook
+                await triggerWebhook();
+                
+                // Show success
+                pinContainer.classList.add('hide');
+                successContainer.classList.add('show');
+            } else {
+                showError();
+            }
+        }
+
+        function handleKeyPress(key) {
+            if (enteredPin.length >= 4) return;
+            
+            enteredPin += key;
+            updateDots();
+            
+            // Haptic feedback on supported devices
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            
+            if (enteredPin.length === 4) {
+                setTimeout(checkPin, 200);
+            }
+        }
+
+        function handleDelete() {
+            if (enteredPin.length > 0) {
+                enteredPin = enteredPin.slice(0, -1);
+                updateDots();
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+        }
+
+        function reset() {
+            enteredPin = '';
+            updateDots();
+            errorMsg.classList.remove('show');
+            pinContainer.classList.remove('hide');
+            successContainer.classList.remove('show');
+        }
+
+        // Event listeners for keypad buttons
+        document.querySelectorAll('.key[data-key]').forEach(button => {
+            button.addEventListener('click', () => {
+                handleKeyPress(button.dataset.key);
+            });
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', handleDelete);
+        resetBtn.addEventListener('click', reset);
+
+        // Keyboard support for desktop testing
+        document.addEventListener('keydown', (e) => {
+            if (successContainer.classList.contains('show')) {
+                if (e.key === 'Enter' || e.key === 'Escape') {
+                    reset();
+                }
+                return;
+            }
+            
+            if (e.key >= '0' && e.key <= '9') {
+                handleKeyPress(e.key);
+            } else if (e.key === 'Backspace') {
+                handleDelete();
+            }
+        });
+    </script>
+</body>
+</html>

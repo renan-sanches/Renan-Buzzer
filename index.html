@@ -274,7 +274,7 @@
                 </div>
                 <h1>Enter PIN</h1>
                 <p class="subtitle">Enter your 4-digit access code</p>
-                
+
                 <div class="pin-display">
                     <div class="pin-dot" id="dot1"></div>
                     <div class="pin-dot" id="dot2"></div>
@@ -312,18 +312,39 @@
                     </svg>
                 </div>
                 <h2 class="success-title">Door Unlocked!</h2>
-                <p class="success-subtitle">Welcome home 🏠</p>
+                <p class="success-subtitle" id="welcomeMsg">Welcome home</p>
                 <button class="reset-btn" id="resetBtn">Done</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const CORRECT_PIN = '2552';
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6-7NuSFat6nCkYoC981SNAv27XbQs10E",
+            authDomain: "fleet-authority-438305-a1.firebaseapp.com",
+            projectId: "fleet-authority-438305-a1",
+            storageBucket: "fleet-authority-438305-a1.firebasestorage.app",
+            messagingSenderId: "375884455373",
+            appId: "1:375884455373:web:98cda5b5a3914de8a7b884",
+            measurementId: "G-VKXK1MHCWY"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
         const WEBHOOK_URL = 'https://maker.ifttt.com/trigger/buzz_entry/with/key/fSi-DfEb3a-ht2tCstC0tp_EsFOlnZNpeA6f8UqBJ--';
-        
+
         let enteredPin = '';
-        
+        let validCodes = [];
+
         const dots = [
             document.getElementById('dot1'),
             document.getElementById('dot2'),
@@ -334,6 +355,37 @@
         const pinContainer = document.getElementById('pinContainer');
         const successContainer = document.getElementById('successContainer');
         const resetBtn = document.getElementById('resetBtn');
+        const welcomeMsg = document.getElementById('welcomeMsg');
+
+        // Load valid codes from Firestore
+        async function loadCodes() {
+            try {
+                const q = query(collection(db, 'codes'), where('active', '==', true));
+                const snapshot = await getDocs(q);
+                validCodes = [];
+                snapshot.forEach(doc => {
+                    validCodes.push({ id: doc.id, ...doc.data() });
+                });
+            } catch (error) {
+                console.error('Error loading codes:', error);
+                // Fallback to hardcoded PIN if Firestore fails
+                validCodes = [{ pin: '2552', name: 'Renan', active: true }];
+            }
+        }
+
+        // Log entry to history
+        async function logEntry(pin, codeName, success) {
+            try {
+                await addDoc(collection(db, 'history'), {
+                    pin: pin,
+                    codeName: codeName || 'Unknown',
+                    timestamp: serverTimestamp(),
+                    success: success
+                });
+            } catch (error) {
+                console.error('Error logging entry:', error);
+            }
+        }
 
         function updateDots() {
             dots.forEach((dot, index) => {
@@ -349,7 +401,10 @@
                 dot.classList.add('error');
             });
             errorMsg.classList.add('show');
-            
+
+            // Log failed attempt
+            logEntry(enteredPin, null, false);
+
             setTimeout(() => {
                 enteredPin = '';
                 updateDots();
@@ -359,23 +414,27 @@
 
         function triggerWebhook() {
             return new Promise((resolve) => {
-                // Use image request to bypass CORS - IFTTT webhooks accept GET
                 const img = new Image();
                 img.onload = () => resolve(true);
-                img.onerror = () => resolve(true); // Still resolve - request was sent
-                img.src = WEBHOOK_URL + '?t=' + Date.now(); // Cache bust
-                
-                // Resolve after short timeout regardless (request fires immediately)
+                img.onerror = () => resolve(true);
+                img.src = WEBHOOK_URL + '?t=' + Date.now();
                 setTimeout(() => resolve(true), 500);
             });
         }
 
         async function checkPin() {
-            if (enteredPin === CORRECT_PIN) {
+            // Find matching code
+            const matchedCode = validCodes.find(code => code.pin === enteredPin);
+
+            if (matchedCode) {
+                // Log successful entry
+                await logEntry(enteredPin, matchedCode.name, true);
+
                 // Trigger the webhook
                 await triggerWebhook();
-                
-                // Show success
+
+                // Show success with personalized message
+                welcomeMsg.textContent = `Welcome, ${matchedCode.name}!`;
                 pinContainer.classList.add('hide');
                 successContainer.classList.add('show');
             } else {
@@ -385,15 +444,14 @@
 
         function handleKeyPress(key) {
             if (enteredPin.length >= 4) return;
-            
+
             enteredPin += key;
             updateDots();
-            
-            // Haptic feedback on supported devices
+
             if (navigator.vibrate) {
                 navigator.vibrate(10);
             }
-            
+
             if (enteredPin.length === 4) {
                 setTimeout(checkPin, 200);
             }
@@ -403,7 +461,7 @@
             if (enteredPin.length > 0) {
                 enteredPin = enteredPin.slice(0, -1);
                 updateDots();
-                
+
                 if (navigator.vibrate) {
                     navigator.vibrate(10);
                 }
@@ -416,6 +474,8 @@
             errorMsg.classList.remove('show');
             pinContainer.classList.remove('hide');
             successContainer.classList.remove('show');
+            // Reload codes in case they changed
+            loadCodes();
         }
 
         // Event listeners for keypad buttons
@@ -436,13 +496,16 @@
                 }
                 return;
             }
-            
+
             if (e.key >= '0' && e.key <= '9') {
                 handleKeyPress(e.key);
             } else if (e.key === 'Backspace') {
                 handleDelete();
             }
         });
+
+        // Load codes on startup
+        loadCodes();
     </script>
 </body>
 </html>

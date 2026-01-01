@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Entry - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1 svg {
+            width: 28px;
+            height: 28px;
+            fill: #4facfe;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* Login Form */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .login-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: #fff;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #4facfe;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-danger {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-success {
+            background: rgba(105, 240, 174, 0.2);
+            color: #69f0ae;
+            border: 1px solid rgba(105, 240, 174, 0.3);
+        }
+
+        .btn-success:hover {
+            background: rgba(105, 240, 174, 0.3);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* Admin Panel */
+        .admin-container {
+            display: none;
+        }
+
+        .admin-container.show {
+            display: block;
+        }
+
+        .login-container.hide {
+            display: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header .btn {
+            width: auto;
+        }
+
+        /* Code List */
+        .code-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .code-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .code-pin {
+            font-size: 20px;
+            font-weight: 600;
+            font-family: monospace;
+            background: rgba(79, 172, 254, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: #4facfe;
+        }
+
+        .code-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .code-status {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .code-status.active {
+            color: #69f0ae;
+        }
+
+        .code-status.inactive {
+            color: #ff6b6b;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Add Code Form */
+        .add-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .add-form input {
+            margin-bottom: 0;
+        }
+
+        .add-form .btn {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        /* History */
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .history-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .history-status.success {
+            background: #69f0ae;
+        }
+
+        .history-status.failed {
+            background: #ff6b6b;
+        }
+
+        .history-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: rgba(79, 172, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login -->
+        <div class="login-container" id="loginContainer">
+            <div class="card login-card">
+                <div class="login-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                    </svg>
+                </div>
+                <h1 style="justify-content: center; margin-bottom: 8px;">Admin Access</h1>
+                <p class="subtitle">Enter the admin password to continue</p>
+                <input type="password" id="passwordInput" placeholder="Admin password">
+                <button class="btn btn-primary" id="loginBtn">Login</button>
+                <p class="error-msg" id="loginError">Incorrect password</p>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="admin-container" id="adminContainer">
+            <a href="/" class="back-link">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Back to Door Entry
+            </a>
+
+            <div class="header">
+                <h1>
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Admin Panel
+                </h1>
+                <button class="btn btn-secondary btn-small" id="logoutBtn">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="codes">PIN Codes</button>
+                <button class="tab" data-tab="history">History</button>
+            </div>
+
+            <!-- Codes Tab -->
+            <div class="tab-content active" id="codesTab">
+                <div class="card">
+                    <h2>Add New Code</h2>
+                    <div class="add-form">
+                        <input type="text" id="newPin" placeholder="4-digit PIN" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+                        <input type="text" id="newName" placeholder="Name (e.g., Guest)">
+                        <button class="btn btn-primary btn-small" id="addCodeBtn">Add</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Active Codes</h2>
+                    <div id="codesList">
+                        <div class="empty-state">Loading codes...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="historyTab">
+                <div class="card">
+                    <h2>Recent Activity</h2>
+                    <div id="historyList">
+                        <div class="empty-state">Loading history...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy, limit, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6-7NuSFat6nCkYoC981SNAv27XbQs10E",
+            authDomain: "fleet-authority-438305-a1.firebaseapp.com",
+            projectId: "fleet-authority-438305-a1",
+            storageBucket: "fleet-authority-438305-a1.firebasestorage.app",
+            messagingSenderId: "375884455373",
+            appId: "1:375884455373:web:98cda5b5a3914de8a7b884",
+            measurementId: "G-VKXK1MHCWY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const adminContainer = document.getElementById('adminContainer');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const codesList = document.getElementById('codesList');
+        const historyList = document.getElementById('historyList');
+        const newPinInput = document.getElementById('newPin');
+        const newNameInput = document.getElementById('newName');
+        const addCodeBtn = document.getElementById('addCodeBtn');
+
+        // Check if already logged in
+        if (localStorage.getItem('adminAuth') === 'true') {
+            showAdmin();
+        }
+
+        // Login
+        loginBtn.addEventListener('click', login);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+
+        async function login() {
+            const password = passwordInput.value;
+
+            try {
+                const configDoc = await getDoc(doc(db, 'config', 'admin'));
+
+                if (configDoc.exists()) {
+                    const adminPassword = configDoc.data().password;
+                    if (password === adminPassword) {
+                        localStorage.setItem('adminAuth', 'true');
+                        showAdmin();
+                        return;
+                    }
+                } else {
+                    // First time setup - create config with default password
+                    if (password === '2552') {
+                        await setDoc(doc(db, 'config', 'admin'), { password: '2552' });
+                        // Also create initial code
+                        await addDoc(collection(db, 'codes'), {
+                            pin: '2552',
+                            name: 'Renan',
+                            active: true,
+                            createdAt: serverTimestamp()
+                        });
+                        localStorage.setItem('adminAuth', 'true');
+                        showAdmin();
+                        return;
+                    }
+                }
+
+                loginError.classList.add('show');
+                passwordInput.value = '';
+            } catch (error) {
+                console.error('Login error:', error);
+                // Fallback for first-time setup
+                if (password === '2552') {
+                    localStorage.setItem('adminAuth', 'true');
+                    showAdmin();
+                } else {
+                    loginError.classList.add('show');
+                }
+            }
+        }
+
+        function showAdmin() {
+            loginContainer.classList.add('hide');
+            adminContainer.classList.add('show');
+            loadCodes();
+            loadHistory();
+        }
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('adminAuth');
+            location.reload();
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Tab').classList.add('active');
+            });
+        });
+
+        // Load codes
+        async function loadCodes() {
+            try {
+                const snapshot = await getDocs(collection(db, 'codes'));
+                const codes = [];
+                snapshot.forEach(doc => {
+                    codes.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (codes.length === 0) {
+                    codesList.innerHTML = '<div class="empty-state">No codes yet. Add one above!</div>';
+                    return;
+                }
+
+                codesList.innerHTML = codes.map(code => `
+                    <div class="code-item" data-id="${code.id}">
+                        <div class="code-info">
+                            <span class="code-pin">${code.pin}</span>
+                            <div>
+                                <div class="code-name">${code.name}</div>
+                                <div class="code-status ${code.active ? 'active' : 'inactive'}">
+                                    ${code.active ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn ${code.active ? 'btn-secondary' : 'btn-success'} btn-small toggle-btn" data-id="${code.id}" data-active="${code.active}">
+                                ${code.active ? 'Disable' : 'Enable'}
+                            </button>
+                            <button class="btn btn-danger btn-small delete-btn" data-id="${code.id}">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Toggle handlers
+                document.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        const currentActive = btn.dataset.active === 'true';
+                        await updateDoc(doc(db, 'codes', id), { active: !currentActive });
+                        loadCodes();
+                    });
+                });
+
+                // Delete handlers
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        if (confirm('Delete this code?')) {
+                            await deleteDoc(doc(db, 'codes', btn.dataset.id));
+                            loadCodes();
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading codes:', error);
+                codesList.innerHTML = '<div class="empty-state">Error loading codes</div>';
+            }
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const q = query(collection(db, 'history'), orderBy('timestamp', 'desc'), limit(50));
+                const snapshot = await getDocs(q);
+                const history = [];
+                snapshot.forEach(doc => {
+                    history.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (history.length === 0) {
+                    historyList.innerHTML = '<div class="empty-state">No activity yet</div>';
+                    return;
+                }
+
+                historyList.innerHTML = history.map(entry => {
+                    const time = entry.timestamp ? new Date(entry.timestamp.seconds * 1000).toLocaleString() : 'Unknown';
+                    return `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-status ${entry.success ? 'success' : 'failed'}"></div>
+                                <span>${entry.success ? entry.codeName || 'Unknown' : 'Failed attempt'}</span>
+                                <span style="color: rgba(255,255,255,0.4)">PIN: ${entry.pin}</span>
+                            </div>
+                            <span class="history-time">${time}</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading history:', error);
+                historyList.innerHTML = '<div class="empty-state">Error loading history</div>';
+            }
+        }
+
+        // Add code
+        addCodeBtn.addEventListener('click', async () => {
+            const pin = newPinInput.value.trim();
+            const name = newNameInput.value.trim();
+
+            if (!pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
+                alert('Please enter a valid 4-digit PIN');
+                return;
+            }
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'codes'), {
+                    pin: pin,
+                    name: name,
+                    active: true,
+                    createdAt: serverTimestamp()
+                });
+                newPinInput.value = '';
+                newNameInput.value = '';
+                loadCodes();
+            } catch (error) {
+                console.error('Error adding code:', error);
+                alert('Error adding code');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Codes - anyone can read (for PIN validation), admin writes via relaxed rules
+    match /codes/{code} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // History - anyone can create (log entries), anyone can read (for admin panel)
+    match /history/{entry} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
+    // Config - readable for password check, writable for admin setup
+    match /config/{doc} {
+      allow read, write: if true;
+    }
+  }
+}

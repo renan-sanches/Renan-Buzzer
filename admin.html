@@ -556,6 +556,65 @@
             });
         });
 
+        function renderCode(code) {
+            const codeItem = document.createElement('div');
+            codeItem.className = 'code-item';
+            codeItem.dataset.id = code.id;
+
+            const codeInfo = document.createElement('div');
+            codeInfo.className = 'code-info';
+            codeItem.appendChild(codeInfo);
+
+            const codePin = document.createElement('span');
+            codePin.className = 'code-pin';
+            codePin.textContent = code.pin;
+            codeInfo.appendChild(codePin);
+
+            const nameStatusDiv = document.createElement('div');
+            codeInfo.appendChild(nameStatusDiv);
+
+            const codeName = document.createElement('div');
+            codeName.className = 'code-name';
+            codeName.textContent = code.name;
+            nameStatusDiv.appendChild(codeName);
+
+            const codeStatus = document.createElement('div');
+            codeStatus.className = `code-status ${code.active ? 'active' : 'inactive'}`;
+            codeStatus.textContent = code.active ? 'Active' : 'Inactive';
+            nameStatusDiv.appendChild(codeStatus);
+
+            const codeActions = document.createElement('div');
+            codeActions.className = 'code-actions';
+            codeItem.appendChild(codeActions);
+
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = `btn ${code.active ? 'btn-secondary' : 'btn-success'} btn-small toggle-btn`;
+            toggleBtn.dataset.id = code.id;
+            toggleBtn.dataset.active = code.active;
+            toggleBtn.textContent = code.active ? 'Disable' : 'Enable';
+            toggleBtn.addEventListener('click', async () => {
+                const id = toggleBtn.dataset.id;
+                const currentActive = toggleBtn.dataset.active === 'true';
+                await updateDoc(doc(db, 'codes', id), { active: !currentActive });
+                loadCodes();
+            });
+            codeActions.appendChild(toggleBtn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-small delete-btn';
+            deleteBtn.dataset.id = code.id;
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm('Delete this code?')) {
+                    await deleteDoc(doc(db, 'codes', deleteBtn.dataset.id));
+                    loadCodes();
+                }
+            });
+            codeActions.appendChild(deleteBtn);
+
+            return codeItem;
+        }
+
         // Load codes
         async function loadCodes() {
             try {
@@ -565,49 +624,15 @@
                     codes.push({ id: doc.id, ...doc.data() });
                 });
 
+                codesList.innerHTML = ''; // Clear existing content
+
                 if (codes.length === 0) {
                     codesList.innerHTML = '<div class="empty-state">No codes yet. Add one above!</div>';
                     return;
                 }
 
-                codesList.innerHTML = codes.map(code => `
-                    <div class="code-item" data-id="${code.id}">
-                        <div class="code-info">
-                            <span class="code-pin">${code.pin}</span>
-                            <div>
-                                <div class="code-name">${code.name}</div>
-                                <div class="code-status ${code.active ? 'active' : 'inactive'}">
-                                    ${code.active ? 'Active' : 'Inactive'}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="code-actions">
-                            <button class="btn ${code.active ? 'btn-secondary' : 'btn-success'} btn-small toggle-btn" data-id="${code.id}" data-active="${code.active}">
-                                ${code.active ? 'Disable' : 'Enable'}
-                            </button>
-                            <button class="btn btn-danger btn-small delete-btn" data-id="${code.id}">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Toggle handlers
-                document.querySelectorAll('.toggle-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = btn.dataset.id;
-                        const currentActive = btn.dataset.active === 'true';
-                        await updateDoc(doc(db, 'codes', id), { active: !currentActive });
-                        loadCodes();
-                    });
-                });
-
-                // Delete handlers
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        if (confirm('Delete this code?')) {
-                            await deleteDoc(doc(db, 'codes', btn.dataset.id));
-                            loadCodes();
-                        }
-                    });
+                codes.forEach(code => {
+                    codesList.appendChild(renderCode(code));
                 });
             } catch (error) {
                 console.error('Error loading codes:', error);
